@@ -1,0 +1,76 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<div class="container">
+  <h1><%= isEdit ? '授業を編集' : '新規授業を投稿' %></h1>
+  
+  <form method="POST" action="<%= isEdit ? '/courses/' + course._id : '/courses' %>">
+    <div class="mb-3">
+      <label class="form-label">講義名</label>
+      <input type="text" name="title" class="form-control" value="<%= isEdit ? course.title : '' %>" required>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">教員名</label>
+      <input type="text" name="professor" class="form-control" value="<%= isEdit ? course.professor : '' %>" required>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">カテゴリ</label>
+      <select name="category" class="form-select" required>
+        <option value="">選択してください</option>
+        <option value="文学" <%= isEdit && course.category === '文学' ? 'selected' : '' %>>文学</option>
+        <option value="歴史" <%= isEdit && course.category === '歴史' ? 'selected' : '' %>>歴史</option>
+        <option value="哲学" <%= isEdit && course.category === '哲学' ? 'selected' : '' %>>哲学</option>
+        <option value="社会学" <%= isEdit && course.category === '社会学' ? 'selected' : '' %>>社会学</option>
+        <option value="その他" <%= isEdit && course.category === 'その他' ? 'selected' : '' %>>その他</option>
+      </select>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">学期</label>
+      <input type="text" name="semester" class="form-control" value="<%= isEdit ? course.semester : '' %>" placeholder="例: 2024年度前期">
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">単位数</label>
+      <input type="number" name="credits" class="form-control" value="<%= isEdit ? course.credits : 2 %>" min="1" max="10">
+    </div>
+    
+    <h4 class="mt-4">成績評価割合 (合計100%)</h4>
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label">出席 (%)</label>
+        <input type="number" name="attendance" class="form-control" value="<%= isEdit ? course.grading.attendance : 0 %>" min="0" max="100">
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">レポート (%)</label>
+        <input type="number" name="report" class="form-control" value="<%= isEdit ? course.grading.report : 0 %>" min="0" max="100">
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">試験 (%)</label>
+        <input type="number" name="exam" class="form-control" value="<%= isEdit ? course.grading.exam : 0 %>" min="0" max="100">
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">発表 (%)</label>
+        <input type="number" name="presentation" class="form-control" value="<%= isEdit ? course.grading.presentation : 0 %>" min="0" max="100">
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">その他 (%)</label>
+        <input type="number" name="other" class="form-control" value="<%= isEdit ? course.grading.other : 0 %>" min="0" max="100">
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">授業の説明</label>
+      <textarea name="description" class="form-control" rows="5"><%= isEdit ? course.description : '' %></textarea>
+    </div>
+    
+    <button type="submit" class="btn btn-primary"><%= isEdit ? '更新' : '投稿' %></button>
+    <a href="<%= isEdit ? '/courses/' + course._id : '/' %>" class="btn btn-secondary">キャンセル</a>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

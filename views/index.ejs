@@ -1,0 +1,111 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<div class="container">
+  <h1 class="mb-4">授業一覧</h1>
+  
+  <!-- 検索・フィルタフォーム -->
+  <form method="GET" action="/" class="mb-4">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <input type="text" name="search" class="form-control" placeholder="授業名・教員名で検索" value="<%= query.search || '' %>">
+      </div>
+      <div class="col-md-3">
+        <select name="category" class="form-select">
+          <option value="">全カテゴリ</option>
+          <option value="文学" <%= query.category === '文学' ? 'selected' : '' %>>文学</option>
+          <option value="歴史" <%= query.category === '歴史' ? 'selected' : '' %>>歴史</option>
+          <option value="哲学" <%= query.category === '哲学' ? 'selected' : '' %>>哲学</option>
+          <option value="社会学" <%= query.category === '社会学' ? 'selected' : '' %>>社会学</option>
+          <option value="その他" <%= query.category === 'その他' ? 'selected' : '' %>>その他</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="sort" class="form-select">
+          <option value="">新着順</option>
+          <option value="ease_desc" <%= query.sort === 'ease_desc' ? 'selected' : '' %>>楽単度順</option>
+          <option value="fun_desc" <%= query.sort === 'fun_desc' ? 'selected' : '' %>>面白さ順</option>
+          <option value="reviews_desc" <%= query.sort === 'reviews_desc' ? 'selected' : '' %>>レビュー数順</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">検索</button>
+      </div>
+    </div>
+  </form>
+  
+  <!-- 授業カード一覧 -->
+  <div class="row">
+    <% courses.forEach(course => { %>
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title"><%= course.title %></h5>
+            <h6 class="card-subtitle mb-2 text-muted"><%= course.professor %></h6>
+            
+            <% 
+              let badgeClass = 'bg-secondary';
+              if (course.category === '文学') badgeClass = 'bg-primary';
+              else if (course.category === '歴史') badgeClass = 'bg-success';
+              else if (course.category === '哲学') badgeClass = 'bg-info';
+              else if (course.category === '社会学') badgeClass = 'bg-warning';
+            %>
+            <span class="badge <%= badgeClass %> mb-3"><%= course.category %></span>
+            
+            <p class="small mb-2">
+              <strong>楽単度:</strong> <%= course.stats.avg_ease.toFixed(1) %> / 5.0 |
+              <strong>面白さ:</strong> <%= course.stats.avg_fun.toFixed(1) %> / 5.0
+            </p>
+            
+            <p class="small mb-2"><strong>レビュー数:</strong> <%= course.stats.review_count %></p>
+            
+            <!-- 成績評価スタックバー -->
+            <div class="mb-3">
+              <small class="text-muted">成績評価割合</small>
+              <div class="progress" style="height: 20px;">
+                <% if (course.grading.attendance > 0) { %>
+                  <div class="progress-bar bg-info" style="width: <%= course.grading.attendance %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="出席: <%= course.grading.attendance %>%">
+                    <%= course.grading.attendance %>%
+                  </div>
+                <% } %>
+                <% if (course.grading.report > 0) { %>
+                  <div class="progress-bar bg-success" style="width: <%= course.grading.report %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="レポート: <%= course.grading.report %>%">
+                    <%= course.grading.report %>%
+                  </div>
+                <% } %>
+                <% if (course.grading.exam > 0) { %>
+                  <div class="progress-bar bg-danger" style="width: <%= course.grading.exam %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="試験: <%= course.grading.exam %>%">
+                    <%= course.grading.exam %>%
+                  </div>
+                <% } %>
+                <% if (course.grading.presentation > 0) { %>
+                  <div class="progress-bar bg-warning" style="width: <%= course.grading.presentation %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="発表: <%= course.grading.presentation %>%">
+                    <%= course.grading.presentation %>%
+                  </div>
+                <% } %>
+                <% if (course.grading.other > 0) { %>
+                  <div class="progress-bar bg-secondary" style="width: <%= course.grading.other %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="その他: <%= course.grading.other %>%">
+                    <%= course.grading.other %>%
+                  </div>
+                <% } %>
+              </div>
+            </div>
+            
+            <a href="/courses/<%= course._id %>" class="btn btn-sm btn-outline-primary">詳細へ</a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+<script>
+    // Bootstrap ツールチップを初期化
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+</script>
+
+</body>
+</html>
