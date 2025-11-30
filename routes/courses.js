@@ -2,6 +2,30 @@ const express = require('express');
 const router = express.Router();
 const Course = require('../models/Course');
 const Review = require('../models/Review');
+const validateRequest = require('../middleware/validateRequest');
+const { courseSchema } = require('../validators/courseValidator');
+const { reviewSchema } = require('../validators/reviewValidator');
+
+/**
+ * 全角文字を半角に変換する関数
+ * @param {string} str - 変換する文字列
+ * @returns {string} - 変換後の文字列
+ */
+function normalizeString(str) {
+  if (!str) return str;
+  
+  return str
+    // 全角数字を半角に
+    .replace(/[０-９]/g, function(s) {
+      return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    })
+    // 全角英字を半角に
+    .replace(/[Ａ-Ｚａ-ｚ]/g, function(s) {
+      return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    })
+    // 全角スペースを半角に
+    .replace(/　/g, ' ');
+}
 
 // 一覧ページ
 router.get('/', async (req, res) => {
@@ -9,11 +33,19 @@ router.get('/', async (req, res) => {
     const { search, category, sort } = req.query;
     let query = {};
     
-    // 検索フィルタ
+    // 検索フィルタ（全角・半角対応）
     if (search) {
+      // 全角文字を半角に正規化
+      const normalizedSearch = normalizeString(search);
+      
       query.$or = [
-        { title: new RegExp(search, 'i') },
-        { professor: new RegExp(search, 'i') }
+        { title: new RegExp(normalizedSearch, 'i') },
+        { professor: new RegExp(normalizedSearch, 'i') },
+        { target_grade: new RegExp(normalizedSearch, 'i') },
+        { semester: new RegExp(normalizedSearch, 'i') },
+        { classroom: new RegExp(normalizedSearch, 'i') },
+        { campus: new RegExp(normalizedSearch, 'i') },
+        { description: new RegExp(normalizedSearch, 'i') }
       ];
     }
     
@@ -30,14 +62,13 @@ router.get('/', async (req, res) => {
     
     const courses = await Course.find(query).sort(sortOption);
     
-    // queryオブジェクトを確実に渡す
-    res.render('index', { 
-      courses, 
-      query: req.query || {} // 空オブジェクトをデフォルトに
-    });
+    res.render('index', { courses, query: req.query || {} });
   } catch (err) {
     console.error(err);
-    res.status(500).send('サーバーエラー');
+    res.status(500).render('error', {
+      title: 'サーバーエラー',
+      message: '授業一覧の取得に失敗しました'
+    });
   }
 });
 
@@ -49,53 +80,94 @@ router.get('/courses/new', (req, res) => {
 // 詳細ページ
 router.get('/courses/:id', async (req, res) => {
   try {
+    // IDの形式チェック
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).render('error', {
+        title: 'エラー',
+        message: '無効な授業IDです'
+      });
+    }
+    
     const course = await Course.findById(req.params.id);
     const reviews = await Review.find({ course_id: req.params.id }).sort({ created_at: -1 });
     
     if (!course) {
-      return res.status(404).send('授業が見つかりません');
+      return res.status(404).render('error', {
+        title: '授業が見つかりません',
+        message: '指定された授業は存在しないか、削除された可能性があります'
+      });
     }
     
     res.render('detail', { course, reviews });
   } catch (err) {
     console.error(err);
-    res.status(500).send('サーバーエラー');
+    res.status(500).render('error', {
+      title: 'サーバーエラー',
+      message: '授業詳細の取得に失敗しました'
+    });
   }
 });
 
 // 編集フォーム
 router.get('/courses/:id/edit', async (req, res) => {
   try {
+    // IDの形式チェック
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).render('error', {
+        title: 'エラー',
+        message: '無効な授業IDです'
+      });
+    }
+    
     const course = await Course.findById(req.params.id);
     
     if (!course) {
-      return res.status(404).send('授業が見つかりません');
+      return res.status(404).render('error', {
+        title: '授業が見つかりません',
+        message: '指定された授業は存在しないか、削除された可能性があります'
+      });
     }
     
     res.render('edit', { course, isEdit: true });
   } catch (err) {
     console.error(err);
-    res.status(500).send('サーバーエラー');
+    res.status(500).render('error', {
+      title: 'サーバーエラー',
+      message: '授業情報の取得に失敗しました'
+    });
   }
 });
 
-// 新規作成処理
-router.post('/courses', async (req, res) => {
+// 新規作成処理（Joiバリデーション付き）
+router.post('/courses', validateRequest(courseSchema), async (req, res) => {
   try {
+    // オンデマンド割合の計算
+    const attendanceCount = Number(req.body.attendance_count) || 0;
+    const ondemandCount = Number(req.body.ondemand_count) || 0;
+    const total = attendanceCount + ondemandCount;
+    const ondemandRatio = total === 0 ? 0 : (ondemandCount / total * 100);
+    
     const courseData = {
       title: req.body.title,
       professor: req.body.professor,
-      category: req.body.category,
-      department: req.body.department,
+      target_grade: req.body.target_grade,
       semester: req.body.semester,
-      credits: req.body.credits,
+      credits: req.body.credits || 1,
+      classroom: req.body.classroom,
+      category: req.body.category,
+      credit_type: req.body.credit_type,
+      attendance_count: attendanceCount,
+      ondemand_count: ondemandCount,
+      ondemand_ratio: ondemandRatio,
       grading: {
-        attendance: Number(req.body.attendance) || 0,
         report: Number(req.body.report) || 0,
         exam: Number(req.body.exam) || 0,
-        presentation: Number(req.body.presentation) || 0,
-        other: Number(req.body.other) || 0
+        outside_task: Number(req.body.outside_task) || 0,
+        inside_task: Number(req.body.inside_task) || 0,
+        project: Number(req.body.project) || 0
       },
+      professor_email: req.body.professor_email,
+      campus: req.body.campus,
       description: req.body.description
     };
     
@@ -105,51 +177,120 @@ router.post('/courses', async (req, res) => {
     res.redirect(`/courses/${course._id}`);
   } catch (err) {
     console.error(err);
-    res.status(500).send('サーバーエラー');
+    res.status(500).render('error', {
+      title: 'サーバーエラー',
+      message: '授業の登録に失敗しました'
+    });
   }
 });
 
-// 編集処理
-router.post('/courses/:id', async (req, res) => {
+// 編集処理（Joiバリデーション付き）
+router.post('/courses/:id', validateRequest(courseSchema), async (req, res) => {
   try {
+    // IDの形式チェック
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).render('error', {
+        title: 'エラー',
+        message: '無効な授業IDです'
+      });
+    }
+    
+    // オンデマンド割合の計算
+    const attendanceCount = Number(req.body.attendance_count) || 0;
+    const ondemandCount = Number(req.body.ondemand_count) || 0;
+    const total = attendanceCount + ondemandCount;
+    const ondemandRatio = total === 0 ? 0 : (ondemandCount / total * 100);
+    
     const updateData = {
       title: req.body.title,
       professor: req.body.professor,
-      category: req.body.category,
-      department: req.body.department,
+      target_grade: req.body.target_grade,
       semester: req.body.semester,
-      credits: req.body.credits,
+      credits: req.body.credits || 1,
+      classroom: req.body.classroom,
+      category: req.body.category,
+      credit_type: req.body.credit_type,
+      attendance_count: attendanceCount,
+      ondemand_count: ondemandCount,
+      ondemand_ratio: ondemandRatio,
       grading: {
-        attendance: Number(req.body.attendance) || 0,
         report: Number(req.body.report) || 0,
         exam: Number(req.body.exam) || 0,
-        presentation: Number(req.body.presentation) || 0,
-        other: Number(req.body.other) || 0
+        outside_task: Number(req.body.outside_task) || 0,
+        inside_task: Number(req.body.inside_task) || 0,
+        project: Number(req.body.project) || 0
       },
+      professor_email: req.body.professor_email,
+      campus: req.body.campus,
       description: req.body.description
     };
     
-    await Course.findByIdAndUpdate(req.params.id, updateData);
+    const course = await Course.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    
+    if (!course) {
+      return res.status(404).render('error', {
+        title: '授業が見つかりません',
+        message: '指定された授業は存在しないか、削除された可能性があります'
+      });
+    }
     
     res.redirect(`/courses/${req.params.id}`);
   } catch (err) {
     console.error(err);
-    res.status(500).send('サーバーエラー');
+    res.status(500).render('error', {
+      title: 'サーバーエラー',
+      message: '授業の更新に失敗しました'
+    });
   }
 });
 
-// レビュー投稿処理
+// レビュー投稿処理（Joiバリデーション付き）
 router.post('/courses/:id/reviews', async (req, res) => {
   try {
+    // IDの形式チェック
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).render('error', {
+        title: 'エラー',
+        message: '無効な授業IDです'
+      });
+    }
+    
+    // レビューデータの準備
     const reviewData = {
       course_id: req.params.id,
       user_uuid: req.body.user_uuid,
-      ease_rating: Number(req.body.ease_rating),
-      fun_rating: Number(req.body.fun_rating),
+      ease_rating: req.body.ease_rating,
+      fun_rating: req.body.fun_rating,
       comment: req.body.comment
     };
     
-    const review = new Review(reviewData);
+    // バリデーション実行
+    const { error, value } = reviewSchema.validate(reviewData, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+    
+    if (error) {
+      const errors = error.details.map(detail => ({
+        field: detail.path.join('.'),
+        message: detail.message
+      }));
+      
+      return res.status(400).render('error', {
+        title: '入力エラー',
+        errors: errors
+      });
+    }
+    
+    // バリデーション通過後、数値に変換してMongoDBに保存
+    const review = new Review({
+      course_id: value.course_id,
+      user_uuid: value.user_uuid,
+      ease_rating: Number(value.ease_rating),
+      fun_rating: Number(value.fun_rating),
+      comment: value.comment
+    });
+    
     await review.save();
     
     // 統計を再計算
@@ -166,7 +307,10 @@ router.post('/courses/:id/reviews', async (req, res) => {
     res.redirect(`/courses/${req.params.id}`);
   } catch (err) {
     console.error(err);
-    res.status(500).send('サーバーエラー');
+    res.status(500).render('error', {
+      title: 'サーバーエラー',
+      message: 'レビューの投稿に失敗しました'
+    });
   }
 });
 

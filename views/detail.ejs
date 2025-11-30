@@ -3,91 +3,239 @@
 
 <div class="container">
   <div class="row">
-    <div class="col-lg-8">
+    <div class="col-md-7 col-lg-7">
+      <!-- 授業タイトル -->
       <h1><%= course.title %></h1>
       <h4 class="text-muted mb-3"><%= course.professor %></h4>
       
+      <% 
+        let badgeClass = 'bg-secondary';
+        if (course.category === '人文社会系科目') badgeClass = 'bg-primary';
+        else if (course.category === 'グローバル教養科目') badgeClass = 'bg-success';
+      %>
+      <% if (course.category) { %>
+        <span class="badge <%= badgeClass %> mb-3"><%= course.category %></span>
+      <% } %>
+      
+      <!-- 授業情報カード -->
       <div class="card mb-4">
         <div class="card-body">
           <h5 class="card-title">授業情報</h5>
-          <p><strong>カテゴリ:</strong> <%= course.category %></p>
-          <p><strong>学期:</strong> <%= course.semester %></p>
-          <p><strong>単位数:</strong> <%= course.credits %></p>
-          <p><strong>説明:</strong> <%= course.description || '説明なし' %></p>
           
-          <h6 class="mt-3">成績評価割合</h6>
-          <ul class="list-unstyled">
-            <li>出席: <%= course.grading.attendance %>%</li>
-            <li>レポート: <%= course.grading.report %>%</li>
-            <li>試験: <%= course.grading.exam %>%</li>
-            <li>発表: <%= course.grading.presentation %>%</li>
-            <li>その他: <%= course.grading.other %>%</li>
-          </ul>
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>対象学年:</strong> <%= course.target_grade || '未設定' %></p>
+              <p><strong>開講時期:</strong> <%= course.semester || '未設定' %></p>
+              <p><strong>単位数:</strong> <%= course.credits %>単位</p>
+              <% if (course.credit_type) { %>
+                <p><strong>単位区分:</strong> <%= course.credit_type %></p>
+              <% } %>
+            </div>
+            <div class="col-md-6">
+              <% if (course.classroom) { %>
+                <p><strong>講義室:</strong> <%= course.classroom %></p>
+              <% } %>
+              <% if (course.campus) { %>
+                <p><strong>キャンパス:</strong> <%= course.campus %></p>
+              <% } %>
+              <% if (course.professor_email) { %>
+                <p><strong>教員メール:</strong> <a href="mailto:<%= course.professor_email %>"><%= course.professor_email %></a></p>
+              <% } %>
+            </div>
+          </div>
           
-          <a href="/courses/<%= course._id %>/edit" class="btn btn-warning">編集</a>
+          <!-- オンデマンド割合 -->
+          <% if (course.ondemand_count > 0 || course.attendance_count > 0) { %>
+            <hr>
+            <h6>授業形式</h6>
+            <div class="row">
+              <div class="col-md-8">
+                <div class="progress" style="height: 30px;">
+                  <% 
+                    const total = course.attendance_count + course.ondemand_count;
+                    const attendancePercent = total === 0 ? 0 : (course.attendance_count / total * 100);
+                    const ondemandPercent = total === 0 ? 0 : (course.ondemand_count / total * 100);
+                  %>
+                  <% if (course.attendance_count > 0) { %>
+                    <div class="progress-bar bg-success" style="width: <%= attendancePercent %>%" data-bs-toggle="tooltip" title="対面: <%= course.attendance_count %>回 (<%= attendancePercent.toFixed(1) %>%)">
+                      対面 <%= course.attendance_count %>回
+                    </div>
+                  <% } %>
+                  <% if (course.ondemand_count > 0) { %>
+                    <div class="progress-bar bg-warning" style="width: <%= ondemandPercent %>%" data-bs-toggle="tooltip" title="オンデマンド: <%= course.ondemand_count %>回 (<%= ondemandPercent.toFixed(1) %>%)">
+                      オンデマンド <%= course.ondemand_count %>回
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <p class="mb-0"><strong>オンデマンド割合:</strong> <%= course.ondemand_ratio.toFixed(2) %>%</p>
+              </div>
+            </div>
+          <% } %>
+          
+          <!-- 成績評価割合 -->
+          <hr>
+          <h6>成績評価割合</h6>
+          <div class="progress mb-3" style="height: 30px;">
+            <% if (course.grading && course.grading.report > 0) { %>
+              <div class="progress-bar bg-info" style="width: <%= course.grading.report %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="レポート: <%= course.grading.report %>%">
+                <% if (course.grading.report >= 10) { %>レポート <%= course.grading.report %>%<% } %>
+              </div>
+            <% } %>
+            <% if (course.grading && course.grading.exam > 0) { %>
+              <div class="progress-bar bg-danger" style="width: <%= course.grading.exam %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="試験: <%= course.grading.exam %>%">
+                <% if (course.grading.exam >= 10) { %>試験 <%= course.grading.exam %>%<% } %>
+              </div>
+            <% } %>
+            <% if (course.grading && course.grading.outside_task > 0) { %>
+              <div class="progress-bar bg-warning" style="width: <%= course.grading.outside_task %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="授業外課題: <%= course.grading.outside_task %>%">
+                <% if (course.grading.outside_task >= 10) { %>授業外 <%= course.grading.outside_task %>%<% } %>
+              </div>
+            <% } %>
+            <% if (course.grading && course.grading.inside_task > 0) { %>
+              <div class="progress-bar bg-success" style="width: <%= course.grading.inside_task %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="授業中課題: <%= course.grading.inside_task %>%">
+                <% if (course.grading.inside_task >= 10) { %>授業中 <%= course.grading.inside_task %>%<% } %>
+              </div>
+            <% } %>
+            <% if (course.grading && course.grading.project > 0) { %>
+              <div class="progress-bar bg-primary" style="width: <%= course.grading.project %>%" data-bs-toggle="tooltip" data-bs-placement="top" title="プロジェクト・発表: <%= course.grading.project %>%">
+                <% if (course.grading.project >= 10) { %>発表 <%= course.grading.project %>%<% } %>
+              </div>
+            <% } %>
+          </div>    
+          <!-- 授業説明 -->
+          <% if (course.description) { %>
+            <hr>
+            <h6>授業説明</h6>
+            <p style="white-space: pre-wrap;"><%= course.description %></p>
+          <% } %>
+          
+          <div class="mt-3">
+            <a href="/courses/<%= course._id %>/edit" class="btn btn-warning">編集</a>
+            <a href="/" class="btn btn-secondary">一覧に戻る</a>
+          </div>
         </div>
       </div>
       
+      <!-- レビューセクション -->
       <h3>レビュー (<%= reviews.length %>件)</h3>
+      
+      <% if (reviews.length === 0) { %>
+        <div class="alert alert-info">
+          まだレビューがありません。最初のレビューを投稿してみましょう！
+        </div>
+      <% } %>
       
       <% reviews.forEach(review => { %>
         <div class="card mb-3">
           <div class="card-body">
-            <p><strong>楽単度:</strong> <%= review.ease_rating %> / 5 | <strong>面白さ:</strong> <%= review.fun_rating %> / 5</p>
-            <p><%= review.comment %></p>
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-2"><strong>楽単度:</strong></p>
+                <p class="starability-result" data-rating="<%= review.ease_rating %>"style="transform: scale(0.9);">
+                  Rated: <%= review.ease_rating %> stars
+                </p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-2"><strong>面白さ:</strong></p>
+                <p class="starability-result" data-rating="<%= review.fun_rating %>"style="transform: scale(0.9);">
+                  Rated: <%= review.fun_rating %> stars
+                </p>
+              </div>
+            </div>
+            <% if (review.comment) { %>
+              <hr>
+              <p class="mt-2 mb-0" style="white-space: pre-wrap;"><%= review.comment %></p>
+            <% } %>
+            <hr>
             <small class="text-muted">投稿日: <%= new Date(review.created_at).toLocaleDateString('ja-JP') %></small>
           </div>
         </div>
       <% }) %>
-      
+    </div>
+    <!-- サイドバー（統計情報） -->
+    <div class="col-md-5 col-lg-5">
+      <div class="card" style="top: 20px;">
+        <div class="card-body">
+          <h5 class="card-title">統計情報</h5>
+          
+          <div class="mb-3">
+            <h6>楽単度</h6>
+            <p class="starability-result" data-rating="<%= Math.round(course.stats.avg_ease) %>">
+              Rated: <%= course.stats.avg_ease.toFixed(1) %> stars
+            </p>
+            <strong><%= course.stats.avg_ease.toFixed(1) %> / 5.0</strong>
+          </div>
+          
+          <div class="mb-3">
+            <h6>面白さ</h6>
+            <p class="starability-result" data-rating="<%= Math.round(course.stats.avg_fun) %>">
+              Rated: <%= course.stats.avg_fun.toFixed(1) %> stars
+            </p>
+            <strong><%= course.stats.avg_fun.toFixed(1) %> / 5.0</strong>
+          </div>
+          
+          <hr>
+          
+          <p><strong>レビュー数:</strong> <%= course.stats.review_count %>件</p>
+          <p class="mb-0"><strong>授業内容更新日:</strong> <%= new Date(course.updated_at).toLocaleDateString('ja-JP') %></p>
+        </div>
+      </div>
+      <!-- レビュー投稿フォーム -->
       <div class="card mt-4">
         <div class="card-body">
           <h5>レビューを投稿</h5>
           <form method="POST" action="/courses/<%= course._id %>/reviews" id="reviewForm">
             <input type="hidden" name="user_uuid" id="userUuidInput">
             
+            <!-- 楽単度の星評価 -->
             <div class="mb-3">
-              <label class="form-label">楽単度 (1-5)</label>
-              <select name="ease_rating" class="form-select" required>
-                <option value="">選択してください</option>
-                <option value="1">1 - 非常に難しい</option>
-                <option value="2">2 - やや難しい</option>
-                <option value="3">3 - 普通</option>
-                <option value="4">4 - やや楽</option>
-                <option value="5">5 - 非常に楽</option>
-              </select>
+              <label class="form-label d-block">楽単度 <span class="text-danger">*</span></label>
+              <fieldset class="starability-basic">
+                <legend class="visually-hidden">楽単度を選択</legend>
+                <input type="radio" id="ease-no-rate" class="input-no-rate" name="ease_rating" value="" checked aria-label="未選択" />
+                <input type="radio" id="ease-rate1" name="ease_rating" value="1" required />
+                <label for="ease-rate1" title="1 - 非常に難しい">1 star</label>
+                <input type="radio" id="ease-rate2" name="ease_rating" value="2" />
+                <label for="ease-rate2" title="2 - やや難しい">2 stars</label>
+                <input type="radio" id="ease-rate3" name="ease_rating" value="3" />
+                <label for="ease-rate3" title="3 - 普通">3 stars</label>
+                <input type="radio" id="ease-rate4" name="ease_rating" value="4" />
+                <label for="ease-rate4" title="4 - やや楽">4 stars</label>
+                <input type="radio" id="ease-rate5" name="ease_rating" value="5" />
+                <label for="ease-rate5" title="5 - 非常に楽">5 stars</label>
+              </fieldset>
+              <small class="text-muted">1 (難しい) 〜 5 (楽)</small>
             </div>
             
+            <!-- 面白さの星評価 -->
             <div class="mb-3">
-              <label class="form-label">面白さ (1-5)</label>
-              <select name="fun_rating" class="form-select" required>
-                <option value="">選択してください</option>
-                <option value="1">1 - 全く面白くない</option>
-                <option value="2">2 - あまり面白くない</option>
-                <option value="3">3 - 普通</option>
-                <option value="4">4 - やや面白い</option>
-                <option value="5">5 - 非常に面白い</option>
-              </select>
+              <label class="form-label d-block">面白さ <span class="text-danger">*</span></label>
+              <fieldset class="starability-basic">
+                <legend class="visually-hidden">面白さを選択</legend>
+                <input type="radio" id="fun-no-rate" class="input-no-rate" name="fun_rating" value="" checked aria-label="未選択" />
+                <input type="radio" id="fun-rate1" name="fun_rating" value="1" required />
+                <label for="fun-rate1" title="1 - 全く面白くない">1 star</label>
+                <input type="radio" id="fun-rate2" name="fun_rating" value="2" />
+                <label for="fun-rate2" title="2 - あまり面白くない">2 stars</label>
+                <input type="radio" id="fun-rate3" name="fun_rating" value="3" />
+                <label for="fun-rate3" title="3 - 普通">3 stars</label>
+                <input type="radio" id="fun-rate4" name="fun_rating" value="4" />
+                <label for="fun-rate4" title="4 - やや面白い">4 stars</label>
+                <input type="radio" id="fun-rate5" name="fun_rating" value="5" />
+                <label for="fun-rate5" title="5 - 非常に面白い">5 stars</label>
+              </fieldset>
+              <small class="text-muted">1 (つまらない) 〜 5 (面白い)</small>
             </div>
             
             <div class="mb-3">
               <label class="form-label">コメント</label>
-              <textarea name="comment" class="form-control" rows="4"></textarea>
+              <textarea name="comment" class="form-control" rows="4" placeholder="授業の感想や後輩へのアドバイスなどを自由に記入してください"></textarea>
             </div>
             
             <button type="submit" class="btn btn-primary">投稿</button>
           </form>
-        </div>
-      </div>
-    </div>
-    
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-body">
-          <h5>統計情報</h5>
-          <p><strong>平均楽単度:</strong> <%= course.stats.avg_ease.toFixed(1) %> / 5</p>
-          <p><strong>平均面白さ:</strong> <%= course.stats.avg_fun.toFixed(1) %> / 5</p>
-          <p><strong>レビュー数:</strong> <%= course.stats.review_count %></p>
         </div>
       </div>
     </div>
@@ -96,5 +244,29 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/main.js"></script>
+<script>
+  // Bootstrap ツールチップを初期化
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+  
+  // レビューフォームのバリデーション
+  document.getElementById('reviewForm').addEventListener('submit', function(e) {
+    const easeRating = document.querySelector('input[name="ease_rating"]:checked');
+    const funRating = document.querySelector('input[name="fun_rating"]:checked');
+    
+    // 未選択（value=""）の場合はエラー
+    if (!easeRating || easeRating.value === '') {
+      e.preventDefault();
+      alert('楽単度を選択してください');
+      return false;
+    }
+    
+    if (!funRating || funRating.value === '') {
+      e.preventDefault();
+      alert('面白さを選択してください');
+      return false;
+    }
+  });
+</script>
 </body>
 </html>

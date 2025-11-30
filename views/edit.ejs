@@ -2,68 +2,127 @@
 <%- include('partials/navbar') %>
 
 <div class="container">
-  <h1><%= isEdit ? '授業を編集' : '新規授業を投稿' %></h1>
+  <h1 class="mb-4"><%= isEdit ? '授業を編集' : '新規授業を投稿' %></h1>
   
-  <form method="POST" action="<%= isEdit ? '/courses/' + course._id : '/courses' %>">
+  <form method="POST" action="<%= isEdit ? '/courses/' + course._id : '/courses' %>" id="courseForm">
+    
+    <!-- 科目名 -->
     <div class="mb-3">
-      <label class="form-label">講義名</label>
+      <label class="form-label">科目名 <span class="text-danger">*</span></label>
       <input type="text" name="title" class="form-control" value="<%= isEdit ? course.title : '' %>" required>
     </div>
     
+    <!-- 担当教員 -->
     <div class="mb-3">
-      <label class="form-label">教員名</label>
+      <label class="form-label">担当教員 <span class="text-danger">*</span></label>
       <input type="text" name="professor" class="form-control" value="<%= isEdit ? course.professor : '' %>" required>
     </div>
     
+    <!-- 対象学年 -->
     <div class="mb-3">
-      <label class="form-label">カテゴリ</label>
-      <select name="category" class="form-select" required>
+      <label class="form-label">対象学年 <span class="text-danger">*</span></label>
+      <select name="target_grade" class="form-select" required>
         <option value="">選択してください</option>
-        <option value="文学" <%= isEdit && course.category === '文学' ? 'selected' : '' %>>文学</option>
-        <option value="歴史" <%= isEdit && course.category === '歴史' ? 'selected' : '' %>>歴史</option>
-        <option value="哲学" <%= isEdit && course.category === '哲学' ? 'selected' : '' %>>哲学</option>
-        <option value="社会学" <%= isEdit && course.category === '社会学' ? 'selected' : '' %>>社会学</option>
-        <option value="その他" <%= isEdit && course.category === 'その他' ? 'selected' : '' %>>その他</option>
+        <option value="1年" <%= isEdit && course.target_grade === '1年' ? 'selected' : '' %>>1年</option>
+        <option value="2年" <%= isEdit && course.target_grade === '2年' ? 'selected' : '' %>>2年</option>
+        <option value="3年" <%= isEdit && course.target_grade === '3年' ? 'selected' : '' %>>3年</option>
+        <option value="4年" <%= isEdit && course.target_grade === '4年' ? 'selected' : '' %>>4年</option>
       </select>
     </div>
     
+    <!-- 開講される時期 -->
     <div class="mb-3">
-      <label class="form-label">学期</label>
-      <input type="text" name="semester" class="form-control" value="<%= isEdit ? course.semester : '' %>" placeholder="例: 2024年度前期">
+      <label class="form-label">開講される時期 <span class="text-danger">*</span></label>
+      <input type="text" name="semester" class="form-control" placeholder="例: 3Q月2" value="<%= isEdit ? course.semester : '' %>" required>
     </div>
-    
+
+     <!-- 科目区分 -->
+    <div class="mb-3">
+      <label class="form-label">科目区分 <span class="text-danger">*</span></label>
+      <select name="category" class="form-select" required>
+        <option value="人文社会系科目" <%= isEdit && course.category === '人文社会系科目' ? 'selected' : '' %>>人文社会系科目</option>
+        <option value="グローバル教養科目" <%= isEdit && course.category === 'グローバル教養科目' ? 'selected' : '' %>>グローバル教養科目</option>
+      </select>
+    </div>
+
+    <!-- 単位数 -->
     <div class="mb-3">
       <label class="form-label">単位数</label>
-      <input type="number" name="credits" class="form-control" value="<%= isEdit ? course.credits : 2 %>" min="1" max="10">
+      <input type="number" name="credits" class="form-control" value="<%= isEdit ? course.credits : 1 %>" min="1" max="10">
     </div>
     
-    <h4 class="mt-4">成績評価割合 (合計100%)</h4>
-    <div class="row">
-      <div class="col-md-4 mb-3">
-        <label class="form-label">出席 (%)</label>
-        <input type="number" name="attendance" class="form-control" value="<%= isEdit ? course.grading.attendance : 0 %>" min="0" max="100">
-      </div>
-      <div class="col-md-4 mb-3">
-        <label class="form-label">レポート (%)</label>
-        <input type="number" name="report" class="form-control" value="<%= isEdit ? course.grading.report : 0 %>" min="0" max="100">
-      </div>
-      <div class="col-md-4 mb-3">
-        <label class="form-label">試験 (%)</label>
-        <input type="number" name="exam" class="form-control" value="<%= isEdit ? course.grading.exam : 0 %>" min="0" max="100">
-      </div>
-      <div class="col-md-4 mb-3">
-        <label class="form-label">発表 (%)</label>
-        <input type="number" name="presentation" class="form-control" value="<%= isEdit ? course.grading.presentation : 0 %>" min="0" max="100">
-      </div>
-      <div class="col-md-4 mb-3">
-        <label class="form-label">その他 (%)</label>
-        <input type="number" name="other" class="form-control" value="<%= isEdit ? course.grading.other : 0 %>" min="0" max="100">
-      </div>
-    </div>
-    
+    <!-- 講義室 -->
     <div class="mb-3">
-      <label class="form-label">授業の説明</label>
-      <textarea name="description" class="form-control" rows="5"><%= isEdit ? course.description : '' %></textarea>
+      <label class="form-label">講義室</label>
+      <input type="text" name="classroom" class="form-control" value="<%= isEdit ? course.classroom : '' %>" placeholder="例: C101">
+    </div>
+    
+   
+    
+    <!-- 単位区分 -->
+    <div class="mb-3">
+      <label class="form-label">単位区分</label>
+      <input type="text" name="credit_type" class="form-control" value="<%= isEdit ? course.credit_type : '選必' %>">
+    </div>
+    
+    <!-- オンデマンド割合 -->
+    <h4 class="mt-4">オンデマンド割合</h4>
+    <div class="row">
+      <div class="col-md-5 mb-3">
+        <label class="form-label">対面（回数）</label>
+        <input type="number" name="attendance_count" id="attendanceCount" class="form-control" value="<%= isEdit ? course.attendance_count : 0 %>" min="0">
+      </div>
+      <div class="col-md-5 mb-3">
+        <label class="form-label">オンデマンド（回数）</label>
+        <input type="number" name="ondemand_count" id="ondemandCount" class="form-control" value="<%= isEdit ? course.ondemand_count : 0 %>" min="0">
+      </div>
+      <div class="col-md-2 mb-3">
+        <label class="form-label">割合</label>
+        <input type="text" id="ondemandRatio" class="form-control" readonly value="<%= isEdit ? course.ondemand_ratio.toFixed(2) : '0.00' %>%">
+      </div>
+    </div>
+    
+    <!-- 成績評価割合 -->
+    <h4 class="mt-4">成績評価割合 <span class="text-danger">*</span> <small class="text-muted">(合計: <span id="gradingTotal">0</span>%)</small></h4>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">レポート (%)</label>
+        <input type="number" name="report" class="grading-input form-control" value="<%= isEdit ? course.grading.report : 0 %>" min="0" max="100" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">試験 (%)</label>
+        <input type="number" name="exam" class="grading-input form-control" value="<%= isEdit ? course.grading.exam : 0 %>" min="0" max="100" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">授業外課題 (%)</label>
+        <input type="number" name="outside_task" class="grading-input form-control" value="<%= isEdit ? course.grading.outside_task : 0 %>" min="0" max="100" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">授業中課題 (%)</label>
+        <input type="number" name="inside_task" class="grading-input form-control" value="<%= isEdit ? course.grading.inside_task : 0 %>" min="0" max="100" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">プロジェクト・発表 (%)</label>
+        <input type="number" name="project" class="grading-input form-control" value="<%= isEdit ? course.grading.project : 0 %>" min="0" max="100" required>
+      </div>
+    </div>
+    
+    <!-- 担当教員のメアド -->
+    <div class="mb-3">
+      <label class="form-label">担当教員のメールアドレス</label>
+      <input type="email" name="professor_email" class="form-control" value="<%= isEdit ? course.professor_email : '' %>" placeholder="例: professor@university.ac.jp">
+    </div>
+    
+    <!-- キャンパス区分 -->
+    <div class="mb-3">
+      <label class="form-label">キャンパス区分</label>
+      <input type="text" name="campus" class="form-control" value="<%= isEdit ? course.campus : '' %>" placeholder="例: 戸畑キャンパス">
+    </div>
+    
+    <!-- 授業説明 -->
+    <div class="mb-3">
+      <label class="form-label">授業説明</label>
+      <textarea name="description" class="form-control" rows="5" placeholder="補足情報や詳細な成績評価割合などを記載してください"><%= isEdit ? course.description : '' %></textarea>
     </div>
     
     <button type="submit" class="btn btn-primary"><%= isEdit ? '更新' : '投稿' %></button>
@@ -72,5 +131,72 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // オンデマンド割合の自動計算
+  const attendanceInput = document.getElementById('attendanceCount');
+  const ondemandInput = document.getElementById('ondemandCount');
+  const ratioDisplay = document.getElementById('ondemandRatio');
+  
+  function calculateOndemandRatio() {
+    const attendance = parseFloat(attendanceInput.value) || 0;
+    const ondemand = parseFloat(ondemandInput.value) || 0;
+    const total = attendance + ondemand;
+    
+    if (total === 0) {
+      ratioDisplay.value = '0.00%';
+    } else {
+      const ratio = (ondemand / total * 100).toFixed(2);
+      ratioDisplay.value = ratio + '%';
+    }
+  }
+  
+  attendanceInput.addEventListener('input', calculateOndemandRatio);
+  ondemandInput.addEventListener('input', calculateOndemandRatio);
+  
+  // 成績評価割合の合計計算
+  const gradingInputs = document.querySelectorAll('.grading-input');
+  const totalDisplay = document.getElementById('gradingTotal');
+  
+  function calculateGradingTotal() {
+    let total = 0;
+    gradingInputs.forEach(input => {
+      total += parseFloat(input.value) || 0;
+    });
+    totalDisplay.textContent = total;
+    
+    // 100%を超えた場合の色変更
+    if (total > 100) {
+      totalDisplay.classList.add('text-danger');
+      totalDisplay.classList.remove('text-success');
+    } else if (total === 100) {
+      totalDisplay.classList.add('text-success');
+      totalDisplay.classList.remove('text-danger');
+    } else {
+      totalDisplay.classList.remove('text-danger', 'text-success');
+    }
+  }
+  
+  gradingInputs.forEach(input => {
+    input.addEventListener('input', calculateGradingTotal);
+  });
+  
+  // フォーム送信時のバリデーション
+  document.getElementById('courseForm').addEventListener('submit', function(e) {
+    let total = 0;
+    gradingInputs.forEach(input => {
+      total += parseFloat(input.value) || 0;
+    });
+    
+    if (total > 100) {
+      e.preventDefault();
+      alert('成績評価割合の合計が100%を超えています。現在の合計: ' + total + '%');
+      return false;
+    }
+  });
+  
+  // ページ読み込み時に計算
+  calculateOndemandRatio();
+  calculateGradingTotal();
+</script>
 </body>
 </html>
