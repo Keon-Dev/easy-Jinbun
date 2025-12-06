@@ -4,21 +4,21 @@ const Joi = require('joi');
 const courseSchema = Joi.object({
   title: Joi.string()
     .min(1)
-    .max(200)
+    .max(50)
     .required()
     .messages({
       'string.empty': '科目名は必須です',
-      'string.max': '科目名は200文字以内で入力してください',
+      'string.max': '科目名は50文字以内で入力してください',
       'any.required': '科目名は必須です'
     }),
   
   professor: Joi.string()
     .min(1)
-    .max(100)
+    .max(30)
     .required()
     .messages({
       'string.empty': '担当教員は必須です',
-      'string.max': '担当教員名は100文字以内で入力してください',
+      'string.max': '担当教員名は30文字以内で入力してください',
       'any.required': '担当教員は必須です'
     }),
   
@@ -88,12 +88,12 @@ const courseSchema = Joi.object({
   ondemand_count: Joi.number()
     .integer()
     .min(0)
-    .max(100)
+    .max(20)
     .default(0)
     .messages({
       'number.base': 'オンデマンド回数は数値で入力してください',
       'number.min': 'オンデマンド回数は0以上で入力してください',
-      'number.max': 'オンデマンド回数は100以下で入力してください'
+      'number.max': 'オンデマンド回数は20以下で入力してください'
     }),
   
   report: Joi.number()

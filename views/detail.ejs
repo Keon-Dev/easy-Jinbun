@@ -112,8 +112,16 @@
           <% } %>
           
           <div class="mt-3">
+            <!-- 編集ボタン: 全員表示 -->
             <a href="/courses/<%= course._id %>/edit" class="btn btn-warning">編集</a>
             <a href="/" class="btn btn-secondary">一覧に戻る</a>
+
+            <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+              <!-- 管理者のみ表示 -->
+              <button class="btn btn-danger" id="deleteCourseBtn" data-course-id="<%= course._id %>">
+                授業を削除
+              </button>
+            <% } %>
           </div>
         </div>
       </div>
@@ -149,7 +157,14 @@
               <p class="mt-2 mb-0" style="white-space: pre-wrap;"><%= review.comment %></p>
             <% } %>
             <hr>
-            <small class="text-muted">投稿日: <%= new Date(review.created_at).toLocaleDateString('ja-JP') %></small>
+            <small class="text-muted">レビュー投稿日: <%= new Date(review.created_at).toLocaleDateString('ja-JP') %></small>
+
+            <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+              <!-- 管理者のみ表示 -->
+              <button class="btn btn-sm btn-danger delete-review-btn" data-review-id="<%= review._id %>">
+                削除
+              </button>
+            <% } %>
           </div>
         </div>
       <% }) %>
@@ -267,6 +282,82 @@
       return false;
     }
   });
+  // ===================================
+  // 管理者機能: レビュー削除
+  // ===================================
+  document.querySelectorAll('.delete-review-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const reviewId = this.getAttribute('data-review-id');
+      
+      if (!confirm('このレビューを削除してもよろしいですか？\n※この操作は取り消せません')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/admin/reviews/${reviewId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // レビューカードを削除
+          const reviewCard = document.getElementById(`review-${reviewId}`);
+          reviewCard.style.transition = 'opacity 0.3s';
+          reviewCard.style.opacity = '0';
+          
+          setTimeout(() => {
+            reviewCard.remove();
+            // ページをリロードして統計を更新
+            location.reload();
+          }, 300);
+        } else {
+          alert('エラー: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('削除に失敗しました');
+      }
+    });
+  });
+  
+  // ===================================
+  // 管理者機能: 授業削除
+  // ===================================
+  const deleteCourseBtn = document.getElementById('deleteCourseBtn');
+  if (deleteCourseBtn) {
+    deleteCourseBtn.addEventListener('click', async function() {
+      const courseId = this.getAttribute('data-course-id');
+      
+      if (!confirm('この授業を削除してもよろしいですか？\n※関連するすべてのレビューも削除されます\n※この操作は取り消せません')) {
+        return;
+      }
+      try {
+        const response = await fetch(`/admin/courses/${courseId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('授業を削除しました');
+          // 一覧ページにリダイレクト
+          window.location.href = '/';
+        } else {
+          alert('エラー: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('削除に失敗しました');
+      }
+    });
+  }
 </script>
 </body>
 </html>

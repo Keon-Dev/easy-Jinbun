@@ -1,0 +1,102 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="container">
+  <h1 class="mb-4">管理者ダッシュボード</h1>
+  
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3><%= courseCount %></h3>
+          <p class="text-muted">登録授業数</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body text-center">
+          <h3><%= reviewCount %></h3>
+          <p class="text-muted">総レビュー数</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <h2 class="mb-3">最新のレビュー</h2>
+  
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>授業名</th>
+          <th>楽単度</th>
+          <th>面白さ</th>
+          <th>コメント</th>
+          <th>投稿日</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recentReviews.forEach(review => { %>
+          <tr id="review-<%= review._id %>">
+            <td>
+              <% if (review.course_id) { %>
+                <a href="/courses/<%= review.course_id._id %>"><%= review.course_id.title %></a>
+              <% } else { %>
+                (削除済み)
+              <% } %>
+            </td>
+            <td><%= review.ease_rating %> / 5</td>
+            <td><%= review.fun_rating %> / 5</td>
+            <td><%= review.comment ? review.comment.substring(0, 50) + (review.comment.length > 50 ? '...' : '') : '-' %></td>
+            <td><%= new Date(review.created_at).toLocaleDateString('ja-JP') %></td>
+            <td>
+              <button class="btn btn-sm btn-danger delete-review-btn" data-review-id="<%= review._id %>">
+                削除
+              </button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // レビュー削除ボタンのイベントリスナー
+  document.querySelectorAll('.delete-review-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const reviewId = this.getAttribute('data-review-id');
+      
+      if (!confirm('このレビューを削除してもよろしいですか？')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/admin/reviews/${reviewId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // 行を削除
+          document.getElementById(`review-${reviewId}`).remove();
+          alert('レビューを削除しました');
+        } else {
+          alert('エラー: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('削除に失敗しました');
+      }
+    });
+  });
+</script>
+</body>
+</html>

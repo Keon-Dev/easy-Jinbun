@@ -12,6 +12,25 @@
         <li class="nav-item">
           <a class="nav-link" href="/courses/new">新規登録</a>
         </li>
+        <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+          <!-- 管理者メニュー -->
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/dashboard">
+              <strong>📊 管理</strong>
+            </a>
+          </li>
+          <li class="nav-item">
+            <form method="POST" action="/admin/logout" style="display: inline;">
+              <button type="submit" class="nav-link btn btn-link" style="border: none; background: none; color: inherit;">
+                ログアウト (<%=  adminUsername %>)
+              </button>
+            </form>
+          </li>
+        <% } else { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/login">管理者ログイン</a>
+          </li>
+        <% } %>
       </ul>
     </div>
   </div>

@@ -5,6 +5,7 @@ const Review = require('../models/Review');
 const validateRequest = require('../middleware/validateRequest');
 const { courseSchema } = require('../validators/courseValidator');
 const { reviewSchema } = require('../validators/reviewValidator');
+// requireAdmin は削除機能のみ使用
 
 /**
  * 全角文字を半角に変換する関数
@@ -15,15 +16,12 @@ function normalizeString(str) {
   if (!str) return str;
   
   return str
-    // 全角数字を半角に
     .replace(/[０-９]/g, function(s) {
       return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
     })
-    // 全角英字を半角に
     .replace(/[Ａ-Ｚａ-ｚ]/g, function(s) {
       return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
     })
-    // 全角スペースを半角に
     .replace(/　/g, ' ');
 }
 
@@ -33,9 +31,7 @@ router.get('/', async (req, res) => {
     const { search, category, sort } = req.query;
     let query = {};
     
-    // 検索フィルタ（全角・半角対応）
     if (search) {
-      // 全角文字を半角に正規化
       const normalizedSearch = normalizeString(search);
       
       query.$or = [
@@ -53,7 +49,6 @@ router.get('/', async (req, res) => {
       query.category = category;
     }
     
-    // ソート
     let sortOption = {};
     if (sort === 'ease_desc') sortOption = { 'stats.avg_ease': -1 };
     else if (sort === 'fun_desc') sortOption = { 'stats.avg_fun': -1 };
@@ -72,7 +67,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 新規作成フォーム
+// 新規作成フォーム（全員アクセス可能）
 router.get('/courses/new', (req, res) => {
   res.render('edit', { course: null, isEdit: false });
 });
@@ -80,7 +75,6 @@ router.get('/courses/new', (req, res) => {
 // 詳細ページ
 router.get('/courses/:id', async (req, res) => {
   try {
-    // IDの形式チェック
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).render('error', {
         title: 'エラー',
@@ -108,10 +102,9 @@ router.get('/courses/:id', async (req, res) => {
   }
 });
 
-// 編集フォーム
+// 編集フォーム（全員アクセス可能）
 router.get('/courses/:id/edit', async (req, res) => {
   try {
-    // IDの形式チェック
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).render('error', {
         title: 'エラー',
@@ -138,10 +131,9 @@ router.get('/courses/:id/edit', async (req, res) => {
   }
 });
 
-// 新規作成処理（Joiバリデーション付き）
+// 新規作成処理（全員可能、Joiバリデーション付き）
 router.post('/courses', validateRequest(courseSchema), async (req, res) => {
   try {
-    // オンデマンド割合の計算
     const attendanceCount = Number(req.body.attendance_count) || 0;
     const ondemandCount = Number(req.body.ondemand_count) || 0;
     const total = attendanceCount + ondemandCount;
@@ -184,10 +176,9 @@ router.post('/courses', validateRequest(courseSchema), async (req, res) => {
   }
 });
 
-// 編集処理（Joiバリデーション付き）
+// 編集処理（全員可能、Joiバリデーション付き）
 router.post('/courses/:id', validateRequest(courseSchema), async (req, res) => {
   try {
-    // IDの形式チェック
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).render('error', {
         title: 'エラー',
@@ -195,7 +186,6 @@ router.post('/courses/:id', validateRequest(courseSchema), async (req, res) => {
       });
     }
     
-    // オンデマンド割合の計算
     const attendanceCount = Number(req.body.attendance_count) || 0;
     const ondemandCount = Number(req.body.ondemand_count) || 0;
     const total = attendanceCount + ondemandCount;
@@ -244,10 +234,9 @@ router.post('/courses/:id', validateRequest(courseSchema), async (req, res) => {
   }
 });
 
-// レビュー投稿処理（Joiバリデーション付き）
+// レビュー投稿処理（全員可能、Joiバリデーション付き）
 router.post('/courses/:id/reviews', async (req, res) => {
   try {
-    // IDの形式チェック
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).render('error', {
         title: 'エラー',
@@ -255,7 +244,6 @@ router.post('/courses/:id/reviews', async (req, res) => {
       });
     }
     
-    // レビューデータの準備
     const reviewData = {
       course_id: req.params.id,
       user_uuid: req.body.user_uuid,
@@ -264,7 +252,6 @@ router.post('/courses/:id/reviews', async (req, res) => {
       comment: req.body.comment
     };
     
-    // バリデーション実行
     const { error, value } = reviewSchema.validate(reviewData, {
       abortEarly: false,
       stripUnknown: true
@@ -282,7 +269,6 @@ router.post('/courses/:id/reviews', async (req, res) => {
       });
     }
     
-    // バリデーション通過後、数値に変換してMongoDBに保存
     const review = new Review({
       course_id: value.course_id,
       user_uuid: value.user_uuid,
@@ -293,7 +279,6 @@ router.post('/courses/:id/reviews', async (req, res) => {
     
     await review.save();
     
-    // 統計を再計算
     const reviews = await Review.find({ course_id: req.params.id });
     const avgEase = reviews.reduce((sum, r) => sum + r.ease_rating, 0) / reviews.length;
     const avgFun = reviews.reduce((sum, r) => sum + r.fun_rating, 0) / reviews.length;

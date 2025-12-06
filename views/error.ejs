@@ -9,7 +9,7 @@
           <h4 class="mb-0"><%= title || 'エラー' %></h4>
         </div>
         <div class="card-body">
-          <% if (errors && errors.length > 0) { %>
+          <% if (locals.errors && locals.errors.length > 0) { %>
             <div class="alert alert-danger">
               <h5>以下の項目を修正してください:</h5>
               <ul class="mb-0">
