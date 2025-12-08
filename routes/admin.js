@@ -1,123 +1,83 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const csrf = require('csurf');
+const passport = require('passport');
+// const csrf = require('csurf');
 const Course = require('../models/Course');
 const Review = require('../models/Review');
 const { requireAdmin } = require('../middleware/auth');
 
-const csrfProtection = csrf({ cookie: true });
+// const csrfProtection = csrf({ cookie: true });
 
-// ===================================
 // ログインページ
 // ===================================
-router.get('/login', csrfProtection, (req, res) => {
-  // 既にログイン済みの場合はダッシュボードへ
-  if (req.session && req.session.isAdmin) {
+router.get('/login', (req, res) => {
+  if (req.isAuthenticated()) {
     return res.redirect('/admin/dashboard');
   }
   
   res.render('admin/login', { 
     error: null,
-    csrfToken: req.csrfToken()
   });
 });
 
 // ===================================
-// ログイン処理
+// ログイン処理（Passport）
 // ===================================
-router.post('/login', csrfProtection, async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    
-    // 環境変数から管理者情報を取得
-    const adminUsername = process.env.ADMIN_USERNAME;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    
-    if (!adminPassword || !adminUsername) {
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      console.error('認証エラー:', err);
       return res.render('admin/login', {
-        error: 'ユーザー名または、管理者パスワードが設定されていません',
-        csrfToken: req.csrfToken()
+        error: 'ログイン処理中にエラーが発生しました',
       });
     }
     
-    // ユーザー名チェック
-    if (username !== adminUsername) {
-      // console.log('ログイン失敗: ユーザー名が一致しません');
+    if (!user) {
       return res.render('admin/login', {
-        error: 'ユーザー名またはパスワードが間違っています',
-        csrfToken: req.csrfToken()
+        error: info.message || 'ユーザー名またはパスワードが間違っています',
       });
     }
     
-    // パスワードチェック
-    if (password !== adminPassword) {
-      // console.log('ログイン失敗: パスワードが一致しません');
-      return res.render('admin/login', {
-        error: 'ユーザー名またはパスワードが間違っています',
-        csrfToken: req.csrfToken()
-      });
-    }
-    
-    // セッションに保存（重要: regenerateで新しいセッションIDを生成）
-    req.session.regenerate((err) => {
+    req.logIn(user, (err) => {
       if (err) {
-        console.error('セッション再生成エラー:', err);
+        console.error('ログインエラー:', err);
         return res.render('admin/login', {
           error: 'ログイン処理中にエラーが発生しました',
-          csrfToken: req.csrfToken()
         });
       }
       
-      // セッションに管理者情報を保存
-      req.session.isAdmin = true;
-      req.session.username = username;
-      req.session.loginTime = new Date();
+      console.log('ログイン成功:', user.username);
       
-      // セッションを確実に保存
-      req.session.save((err) => {
-        if (err) {
-          console.error('セッション保存エラー:', err);
-          return res.render('admin/login', {
-            error: 'ログイン処理中にエラーが発生しました',
-            csrfToken: req.csrfToken()
-          });
-        }
-        
-        console.log('ログイン成功:', username, 'セッションID:', req.sessionID);
-        
-        // リダイレクト先を取得
-        const returnTo = req.session.returnTo || '/admin/dashboard';
-        delete req.session.returnTo;
-        
-        res.redirect(returnTo);
-      });
+      const returnTo = req.session.returnTo || '/admin/dashboard';
+      delete req.session.returnTo;
+      
+      return res.redirect(returnTo);
     });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.render('admin/login', {
-      error: 'ログイン処理中にエラーが発生しました',
-      csrfToken: req.csrfToken()
-    });
-  }
+  })(req, res, next);
 });
 
 // ===================================
 // ログアウト
 // ===================================
 router.post('/logout', (req, res) => {
-  const username = req.session.username;
+  const username = req.user ? req.user.username : 'unknown';
   
-  req.session.destroy((err) => {
+  req.logout((err) => {
     if (err) {
       console.error('Logout error:', err);
-    } else {
-      console.log('ログアウト成功:', username);
+      return res.redirect('/');
     }
     
-    // クッキーをクリア
-    res.clearCookie('sessionId');
-    res.redirect('/');
+    console.log('ログアウト成功:', username);
+    
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('セッション破棄エラー:', err);
+      }
+      res.clearCookie('sessionId');
+      res.redirect('/');
+    });
   });
 });
 
@@ -126,8 +86,7 @@ router.post('/logout', (req, res) => {
 // ===================================
 router.get('/dashboard', requireAdmin, async (req, res) => {
   try {
-    console.log('ダッシュボードアクセス:', req.session.username, 'セッションID:', req.sessionID);
-    
+    // console.log('ダッシュボードアクセス:', req.session.username, 'セッションID:', req.sessionID);
     const courseCount = await Course.countDocuments();
     const reviewCount = await Review.countDocuments();
     const recentReviews = await Review.find()
@@ -165,10 +124,9 @@ router.delete('/reviews/:id', requireAdmin, async (req, res) => {
     }
     
     const courseId = review.course_id;
-    
     // レビューを削除
     await Review.findByIdAndDelete(req.params.id);
-    
+
     // 統計を再計算
     const reviews = await Review.find({ course_id: courseId });
     
@@ -220,7 +178,6 @@ router.delete('/courses/:id', requireAdmin, async (req, res) => {
     
     // 関連レビューも削除
     await Review.deleteMany({ course_id: req.params.id });
-    
     // 授業を削除
     await Course.findByIdAndDelete(req.params.id);
     

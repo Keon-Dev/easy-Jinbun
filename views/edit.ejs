@@ -5,7 +5,8 @@
   <h1 class="mb-4"><%= isEdit ? '授業を編集' : '新規授業を投稿' %></h1>
   
   <form method="POST" action="<%= isEdit ? '/courses/' + course._id : '/courses' %>" id="courseForm">
-    
+    <!-- CSRF トークン -->
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <!-- 科目名 -->
     <div class="mb-3">
       <label class="form-label">科目名 <span class="text-danger">*</span></label>

@@ -1,18 +1,15 @@
 /**
- * 認証ミドルウェア
+ * 認証ミドルウェア（Passport統合版）
  */
 
-// ログイン必須チェック（より厳密に）
+// ログイン必須チェック
 function requireAuth(req, res, next) {
-  // セッションが存在し、管理者フラグが立っているか確認
-  if (req.session && req.session.isAdmin === true) {
+  if (req.isAuthenticated()) {
     return next();
   }
   
-  // ログに記録
-  console.log('認証失敗 - セッション:', req.session);
+  console.log('認証失敗 - 未ログイン');
   
-  // JSONリクエストの場合
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
     return res.status(401).json({
       success: false,
@@ -21,22 +18,18 @@ function requireAuth(req, res, next) {
     });
   }
   
-  // HTMLリクエストの場合
   req.session.returnTo = req.originalUrl;
   res.redirect('/admin/login');
 }
 
-// 管理者チェック
+// 管理者チェック（Passport使用）
 function requireAdmin(req, res, next) {
-  // セッションが存在し、管理者フラグが立っているか確認
-  if (req.session && req.session.isAdmin === true) {
+  if (req.isAuthenticated()) {
     return next();
   }
   
-  // ログに記録
-  console.log('管理者権限なし - セッション:', req.session);
+  console.log('管理者権限なし - 未ログイン');
   
-  // JSONリクエストの場合
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
     return res.status(403).json({
       success: false,
@@ -45,18 +38,17 @@ function requireAdmin(req, res, next) {
     });
   }
   
-  // HTMLリクエストの場合
   req.session.returnTo = req.originalUrl;
   res.status(403).render('error', {
     title: '権限エラー',
-    message: '管理者のみアクセス可能です。ログインしてください。'
+    message: '管理者のみアクセス可能です。<a href="/admin/login">ログイン</a>してください。'
   });
 }
 
 // 管理者状態をテンプレートに渡す
 function injectAdminStatus(req, res, next) {
-  res.locals.isAdmin = req.session && req.session.isAdmin === true;
-  res.locals.adminUsername = req.session && req.session.username || null;
+  res.locals.isAdmin = req.isAuthenticated && req.isAuthenticated();
+  res.locals.adminUsername = req.user ? req.user.username : null;
   next();
 }
 

@@ -201,6 +201,9 @@
       <div class="card mt-4">
         <div class="card-body">
           <h5>レビューを投稿</h5>
+          <!-- CSRF トークン -->
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="user_uuid" id="userUuidInput">
           <form method="POST" action="/courses/<%= course._id %>/reviews" id="reviewForm">
             <input type="hidden" name="user_uuid" id="userUuidInput">
             

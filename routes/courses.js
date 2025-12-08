@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
+// const csrf = require('csurf'); 
 const Course = require('../models/Course');
 const Review = require('../models/Review');
 const validateRequest = require('../middleware/validateRequest');
 const { courseSchema } = require('../validators/courseValidator');
 const { reviewSchema } = require('../validators/reviewValidator');
-// requireAdmin は削除機能のみ使用
+
+// CSRF保護ミドルウェア
+// const csrfProtection = csrf({ cookie: true });
 
 /**
  * 全角文字を半角に変換する関数
- * @param {string} str - 変換する文字列
- * @returns {string} - 変換後の文字列
  */
 function normalizeString(str) {
   if (!str) return str;
@@ -24,6 +25,10 @@ function normalizeString(str) {
     })
     .replace(/　/g, ' ');
 }
+
+// ===================================
+// GET ルート
+// ===================================
 
 // 一覧ページ
 router.get('/', async (req, res) => {
@@ -67,9 +72,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 新規作成フォーム（全員アクセス可能）
+// 新規作成フォーム
 router.get('/courses/new', (req, res) => {
-  res.render('edit', { course: null, isEdit: false });
+  res.render('edit', { 
+    course: null, 
+    isEdit: false,
+  });
 });
 
 // 詳細ページ
@@ -92,7 +100,10 @@ router.get('/courses/:id', async (req, res) => {
       });
     }
     
-    res.render('detail', { course, reviews });
+    res.render('detail', { 
+      course, 
+      reviews,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).render('error', {
@@ -102,7 +113,7 @@ router.get('/courses/:id', async (req, res) => {
   }
 });
 
-// 編集フォーム（全員アクセス可能）
+// 編集フォーム（
 router.get('/courses/:id/edit', async (req, res) => {
   try {
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -121,7 +132,10 @@ router.get('/courses/:id/edit', async (req, res) => {
       });
     }
     
-    res.render('edit', { course, isEdit: true });
+    res.render('edit', { 
+      course, 
+      isEdit: true,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).render('error', {
@@ -131,7 +145,11 @@ router.get('/courses/:id/edit', async (req, res) => {
   }
 });
 
-// 新規作成処理（全員可能、Joiバリデーション付き）
+// ===================================
+// POST ルート（）
+// ===================================
+
+// 新規作成処理
 router.post('/courses', validateRequest(courseSchema), async (req, res) => {
   try {
     const attendanceCount = Number(req.body.attendance_count) || 0;
@@ -176,8 +194,8 @@ router.post('/courses', validateRequest(courseSchema), async (req, res) => {
   }
 });
 
-// 編集処理（全員可能、Joiバリデーション付き）
-router.post('/courses/:id', validateRequest(courseSchema), async (req, res) => {
+// 編集処理
+router.post('/courses/:id',  validateRequest(courseSchema), async (req, res) => {
   try {
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).render('error', {
@@ -234,7 +252,7 @@ router.post('/courses/:id', validateRequest(courseSchema), async (req, res) => {
   }
 });
 
-// レビュー投稿処理（全員可能、Joiバリデーション付き）
+// レビュー投稿処理
 router.post('/courses/:id/reviews', async (req, res) => {
   try {
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
