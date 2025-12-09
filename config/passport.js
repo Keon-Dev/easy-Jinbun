@@ -1,6 +1,6 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const Admin = require('../models/Admin');
+const Admin = require('../models/admin');
 
 // ローカル認証戦略の設定
 passport.use(new LocalStrategy(

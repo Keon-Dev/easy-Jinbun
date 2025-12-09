@@ -94,16 +94,23 @@
                 </small>
               </div>
             <% } %>
-            
+            <!-- 教員メールアドレス -->
+            <% if (course.professor_email) { %>
+              <div class="mb-2">
+                <small class="text-muted">
+                  <strong>教員メールアドレス</strong> <%= course.professor_email %>
+                </small>
+              </div>
+            <% } %>
             <!-- 単位情報 -->
-            <div class="mb-2">
+            <!-- <div class="mb-2">
               <small class="text-muted">
                 <strong>単位:</strong> <%= course.credits %>単位
                 <% if (course.credit_type) { %>
                   (<%= course.credit_type %>)
                 <% } %>
               </small>
-            </div>
+            </div> -->
             
             <!-- オンデマンド割合 -->
             <% if (course.ondemand_count > 0 || course.attendance_count > 0) { %>
