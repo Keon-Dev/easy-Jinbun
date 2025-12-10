@@ -9,7 +9,7 @@
     <div class="row g-3">
       <div class="col-md-4">
         <input type="text" name="search" class="form-control" placeholder="フリーワード検索（科目名、教員名、開講時期など）" value="<%= query.search || '' %>">
-        <small class="text-muted">例: 文学、田中、1年、3Q月2、C101</small>
+        <small class="text-muted">例: 文学、田中、1年、3Q月2</small>
       </div>
       <div class="col-md-3">
         <select name="category" class="form-select">
@@ -98,7 +98,7 @@
             <% if (course.professor_email) { %>
               <div class="mb-2">
                 <small class="text-muted">
-                  <strong>教員メールアドレス</strong> <%= course.professor_email %>
+                  <strong>教員メアド</strong> <%= course.professor_email %>
                 </small>
               </div>
             <% } %>
@@ -118,9 +118,6 @@
                 <small class="text-muted">
                   <span class="d-block">
                     <strong>オンデマンド:</strong> <%= course.ondemand_ratio.toFixed(1) %>%
-                  </span>
-                  <span class="d-block">
-                    (対面:<%= course.attendance_count %>回 / オンデマンド:<%= course.ondemand_count %>回)
                   </span>
                 </small>
               </div>

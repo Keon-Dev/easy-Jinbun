@@ -49,7 +49,7 @@
     <!-- 単位数 -->
     <div class="mb-3">
       <label class="form-label">単位数</label>
-      <input type="number" name="credits" class="form-control" value="<%= isEdit ? course.credits : 1 %>" min="1" max="10">
+      <input type="number" name="credits" class="form-control" value="<%= isEdit ? course.credits : 1 %>" min="1" max="10" required>
     </div>
     
     <!-- 講義室 -->
@@ -88,23 +88,23 @@
     <div class="row">
       <div class="col-md-6 mb-3">
         <label class="form-label">レポート (%)</label>
-        <input type="number" name="report" class="grading-input form-control" value="<%= isEdit ? course.grading.report : 0 %>" min="0" max="100" required>
+        <input type="number" name="report" class="grading-input form-control" value="<%= isEdit ? course.grading.report : 0 %>" min="0" max="100">
       </div>
       <div class="col-md-6 mb-3">
         <label class="form-label">試験 (%)</label>
-        <input type="number" name="exam" class="grading-input form-control" value="<%= isEdit ? course.grading.exam : 0 %>" min="0" max="100" required>
+        <input type="number" name="exam" class="grading-input form-control" value="<%= isEdit ? course.grading.exam : 0 %>" min="0" max="100">
       </div>
       <div class="col-md-6 mb-3">
         <label class="form-label">授業外課題 (%)</label>
-        <input type="number" name="outside_task" class="grading-input form-control" value="<%= isEdit ? course.grading.outside_task : 0 %>" min="0" max="100" required>
+        <input type="number" name="outside_task" class="grading-input form-control" value="<%= isEdit ? course.grading.outside_task : 0 %>" min="0" max="100">
       </div>
       <div class="col-md-6 mb-3">
         <label class="form-label">授業中課題 (%)</label>
-        <input type="number" name="inside_task" class="grading-input form-control" value="<%= isEdit ? course.grading.inside_task : 0 %>" min="0" max="100" required>
+        <input type="number" name="inside_task" class="grading-input form-control" value="<%= isEdit ? course.grading.inside_task : 0 %>" min="0" max="100">
       </div>
       <div class="col-md-6 mb-3">
         <label class="form-label">プロジェクト・発表 (%)</label>
-        <input type="number" name="project" class="grading-input form-control" value="<%= isEdit ? course.grading.project : 0 %>" min="0" max="100" required>
+        <input type="number" name="project" class="grading-input form-control" value="<%= isEdit ? course.grading.project : 0 %>" min="0" max="100">
       </div>
     </div>
     
@@ -188,10 +188,14 @@
       total += parseFloat(input.value) || 0;
     });
     
+    if (total !== 100) {  // ← ここを変更
+    e.preventDefault();
     if (total > 100) {
-      e.preventDefault();
       alert('成績評価割合の合計が100%を超えています。現在の合計: ' + total + '%');
-      return false;
+    } else {
+      alert('成績評価割合の合計が100%になっていません。現在の合計: ' + total + '%');
+    }
+    return false;
     }
   });
   

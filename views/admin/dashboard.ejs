@@ -65,6 +65,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// 🔑 サーバーから渡されたCSRFトークンをJS変数に格納
+  const CSRF_TOKEN = "<%= csrfToken %>";
   // レビュー削除ボタンのイベントリスナー
   document.querySelectorAll('.delete-review-btn').forEach(btn => {
     btn.addEventListener('click', async function() {
@@ -78,7 +80,8 @@
         const response = await fetch(`/admin/reviews/${reviewId}`, {
           method: 'DELETE',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': CSRF_TOKEN // <-- 追加
           }
         });
         

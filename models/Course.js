@@ -17,11 +17,11 @@ const courseSchema = new mongoose.Schema({
   
   // 成績評価割合
   grading: {
-    report: { type: Number, default: 0 }, // レポート
-    exam: { type: Number, default: 0 }, // 試験
-    outside_task: { type: Number, default: 0 }, // 授業外課題
-    inside_task: { type: Number, default: 0 }, // 授業中課題
-    project: { type: Number, default: 0 } // プロジェクト・発表
+    report: { type: Number, default: 0 ,required:true}, // レポート
+    exam: { type: Number, default: 0 ,required:true}, // 試験
+    outside_task: { type: Number, default: 0 ,required:true}, // 授業外課題
+    inside_task: { type: Number, default: 0 ,required:true}, // 授業中課題
+    project: { type: Number, default: 0 ,required:true} // プロジェクト・発表
   },
   
   professor_email: { type: String, default: '' }, // 教員メアド
@@ -37,6 +37,31 @@ const courseSchema = new mongoose.Schema({
   updated_at: { type: Date, default: Date.now } // 最終更新日を追加
 },{
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } // Mongooseの自動タイムスタンプ機能
+});
+// ミドルウェア: バリデーション前に成績評価割合の合計をチェック
+courseSchema.pre('validate', function(next) {
+  const grading = this.grading;
+  
+  if (!grading) {
+    return next();
+  }
+
+  // デフォルト値0を考慮して計算
+  const total = 
+    (grading.report || 0) + 
+    (grading.exam || 0) + 
+    (grading.outside_task || 0) + 
+    (grading.inside_task || 0) + 
+    (grading.project || 0);
+
+  if (total !== 100) {
+    const error = new Error('成績評価割合の合計は100%でなければなりません。');
+    error.name = 'ValidationError';
+    return next(error);
+    // または this.invalidate('grading', '...') も可
+  }
+  
+  next();
 });
 
 // ミドルウェア: findOneAndDelete実行後に関連レビューを削除
