@@ -198,12 +198,19 @@ app.use((err, req, res, next) => {
 });
 
 // ===================================
-// サーバー起動
+// サーバー起動（Vercel対応）
 // ===================================
-app.listen(PORT, () => {
-  logger.info(`サーバーがポート${PORT}で起動しました`);
-  logger.info(`環境: ${process.env.NODE_ENV || 'development'}`);
-});
+
+// Vercel環境ではサーバーを起動しない
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    logger.info(`サーバーがポート${PORT}で起動しました`);
+    logger.info(`環境: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
+
+// Vercel用のエクスポート
+module.exports = app;
 
 // プロセス終了時のクリーンアップ
 process.on('SIGTERM', () => {
@@ -213,3 +220,20 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+// // ===================================
+// // サーバー起動
+// // ===================================
+// app.listen(PORT, () => {
+//   logger.info(`サーバーがポート${PORT}で起動しました`);
+//   logger.info(`環境: ${process.env.NODE_ENV || 'development'}`);
+// });
+
+// // プロセス終了時のクリーンアップ
+// process.on('SIGTERM', () => {
+//   logger.info('SIGTERM signal received: closing HTTP server');
+//   mongoose.connection.close(() => {
+//     logger.info('MongoDB connection closed');
+//     process.exit(0);
+//   });
+// });
+module.exports = app;
