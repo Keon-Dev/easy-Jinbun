@@ -6,7 +6,7 @@
       "use": "@vercel/node"
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "routes": [
+    { "src": "/(.*)", "dest": "server.js" }
+  ]
 }
