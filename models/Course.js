@@ -3,7 +3,16 @@ const mongoose = require('mongoose');
 const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
   professor: { type: String, required: true },
-  target_grade: { type: String, required: true }, // 対象学年
+  target_grade: { 
+  type: [String],  // 配列に変更
+  required: true,
+  validate: {
+    validator: function(arr) {
+      return arr && arr.length > 0;  // 最低1つは選択必須
+    },
+    message: '対象学年を1つ以上選択してください'
+    }
+  },
   semester: { type: String, required: true }, // 開講時期
   credits: { type: Number, default: 1 },
   classroom: { type: String, default: '' }, // 講義室

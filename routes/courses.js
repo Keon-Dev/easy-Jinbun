@@ -157,11 +157,18 @@ router.post('/courses', validateRequest(courseSchema), async (req, res) => {
     const total = attendanceCount + ondemandCount;
     const ondemandRatio = total === 0 ? 0 : (ondemandCount / total * 100);
     
+    // target_grade を配列に変換（単一の場合も配列化）
+    let targetGrades = req.body.target_grade;
+    if (typeof targetGrades === 'string') {
+      targetGrades = [targetGrades];
+    } else if (!Array.isArray(targetGrades)) {
+      targetGrades = [];
+    }
+    
     const courseData = {
       title: req.body.title,
       professor: req.body.professor,
-      // 複数選択の場合、req.body.target_grade は自動的に配列になります
-      target_grade: req.body.target_grade,
+      target_grade: targetGrades,
       semester: req.body.semester,
       credits: req.body.credits || 1,
       classroom: req.body.classroom,

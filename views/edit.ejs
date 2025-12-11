@@ -22,14 +22,43 @@
     <!-- 対象学年（複数選択） -->
     <div class="mb-3">
       <label class="form-label">対象学年 <span class="text-danger">*</span></label>
-      <small class="text-muted d-block mb-2">複数選択可能（Ctrl/Cmd キーを押しながらクリック）</small>
-      <select name="target_grade" class="form-select" multiple size="4" required>
-        <option value="1年" <%= isEdit && course.target_grade && course.target_grade.includes('1年') ? 'selected' : '' %>>1年</option>
-        <option value="2年" <%= isEdit && course.target_grade && course.target_grade.includes('2年') ? 'selected' : '' %>>2年</option>
-        <option value="3年" <%= isEdit && course.target_grade && course.target_grade.includes('3年') ? 'selected' : '' %>>3年</option>
-        <option value="4年" <%= isEdit && course.target_grade && course.target_grade.includes('4年') ? 'selected' : '' %>>4年</option>
-      </select>
-      <small class="text-muted">※ Ctrl/Cmd キーを押しながら複数選択できます</small>
+      <div class="form-text mb-2">複数選択可能です</div>
+      
+      <div class="form-check">
+        <input class="form-check-input target-grade-checkbox" type="checkbox" name="target_grade" value="1年" id="grade1"
+          <%= isEdit && course.target_grade && course.target_grade.includes('1年') ? 'checked' : '' %>>
+        <label class="form-check-label" for="grade1">
+          1年
+        </label>
+      </div>
+      
+      <div class="form-check">
+        <input class="form-check-input target-grade-checkbox" type="checkbox" name="target_grade" value="2年" id="grade2"
+          <%= isEdit && course.target_grade && course.target_grade.includes('2年') ? 'checked' : '' %>>
+        <label class="form-check-label" for="grade2">
+          2年
+        </label>
+      </div>
+      
+      <div class="form-check">
+        <input class="form-check-input target-grade-checkbox" type="checkbox" name="target_grade" value="3年" id="grade3"
+          <%= isEdit && course.target_grade && course.target_grade.includes('3年') ? 'checked' : '' %>>
+        <label class="form-check-label" for="grade3">
+          3年
+        </label>
+      </div>
+      
+      <div class="form-check">
+        <input class="form-check-input target-grade-checkbox" type="checkbox" name="target_grade" value="4年" id="grade4"
+          <%= isEdit && course.target_grade && course.target_grade.includes('4年') ? 'checked' : '' %>>
+        <label class="form-check-label" for="grade4">
+          4年
+        </label>
+      </div>
+      
+      <div id="targetGradeError" class="text-danger mt-2" style="display: none;">
+        対象学年を1つ以上選択してください
+      </div>
     </div>
     
     <!-- 開講される時期 -->
@@ -184,6 +213,20 @@
   
   // フォーム送信時のバリデーション
   document.getElementById('courseForm').addEventListener('submit', function(e) {
+     // 対象学年のチェック
+    const checkedGrades = document.querySelectorAll('.target-grade-checkbox:checked');
+    const errorDiv = document.getElementById('targetGradeError');
+    
+    if (checkedGrades.length === 0) {
+      e.preventDefault();
+      errorDiv.style.display = 'block';
+      errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      alert('対象学年を1つ以上選択してください');
+      return false;
+    } else {
+      errorDiv.style.display = 'none';
+    }
+
     let total = 0;
     gradingInputs.forEach(input => {
       total += parseFloat(input.value) || 0;
@@ -199,7 +242,18 @@
     return false;
     }
   });
-  
+
+  // チェックボックスの変更を監視
+  document.querySelectorAll('.target-grade-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const checkedGrades = document.querySelectorAll('.target-grade-checkbox:checked');
+      const errorDiv = document.getElementById('targetGradeError');
+      
+      if (checkedGrades.length > 0) {
+        errorDiv.style.display = 'none';
+      }
+    });
+  });
   // ページ読み込み時に計算
   calculateOndemandRatio();
   calculateGradingTotal();

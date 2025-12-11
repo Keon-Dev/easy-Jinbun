@@ -14,19 +14,26 @@ const courseSchema = Joi.object({
   
   professor: Joi.string()
     .min(1)
-    .max(30)
+    .max(50)
     .required()
     .messages({
       'string.empty': '担当教員は必須です',
-      'string.max': '担当教員名は30文字以内で入力してください',
+      'string.max': '担当教員名は50文字以内で入力してください',
       'any.required': '担当教員は必須です'
     }),
   
-  target_grade: Joi.string()
-    .valid('1年', '2年', '3年', '4年')
+  target_grade: Joi.alternatives()
+    .try(
+      Joi.array()
+        .items(Joi.string().valid('1年', '2年', '3年', '4年'))
+        .min(1)
+        .required(),
+      Joi.string().valid('1年', '2年', '3年', '4年')  // 単一選択も許容（後方互換性）
+    )
     .required()
     .messages({
-      'any.only': '対象学年は1年、2年、3年、4年のいずれかを選択してください',
+      'array.min': '対象学年を1つ以上選択してください',
+      'any.only': '対象学年は1年、2年、3年、4年から選択してください',
       'any.required': '対象学年は必須です'
     }),
   
