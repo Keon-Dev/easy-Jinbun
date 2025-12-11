@@ -163,6 +163,11 @@ h1, h2, h3, h4, h5, h6 {
   color: #212529;
 }
 
+.default-px {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
 .form-control:focus, .form-select:focus {
   border-color: #003cff;
   box-shadow: 0 0 0 0.2rem rgba(0, 60, 255, 0.25);
