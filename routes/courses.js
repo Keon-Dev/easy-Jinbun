@@ -160,6 +160,7 @@ router.post('/courses', validateRequest(courseSchema), async (req, res) => {
     const courseData = {
       title: req.body.title,
       professor: req.body.professor,
+      // 複数選択の場合、req.body.target_grade は自動的に配列になります
       target_grade: req.body.target_grade,
       semester: req.body.semester,
       credits: req.body.credits || 1,

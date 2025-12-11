@@ -24,7 +24,13 @@
           
           <div class="row">
             <div class="col-md-6">
-              <p><strong>対象学年:</strong> <%= course.target_grade || '未設定' %></p>
+              <p><strong>対象学年:</strong> 
+                <% if (course.target_grade && Array.isArray(course.target_grade)) { %>
+                  <%= course.target_grade.join(', ') %>
+                <% } else { %>
+                  <%= course.target_grade || '未設定' %>
+                <% } %>
+              </p>
               <p><strong>開講時期:</strong> <%= course.semester || '未設定' %></p>
               <p><strong>単位数:</strong> <%= course.credits %>単位</p>
               <% if (course.credit_type) { %>

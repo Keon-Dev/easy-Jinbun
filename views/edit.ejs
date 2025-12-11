@@ -19,16 +19,17 @@
       <input type="text" name="professor" class="form-control" value="<%= isEdit ? course.professor : '' %>" required>
     </div>
     
-    <!-- 対象学年 -->
+    <!-- 対象学年（複数選択） -->
     <div class="mb-3">
       <label class="form-label">対象学年 <span class="text-danger">*</span></label>
-      <select name="target_grade" class="form-select" required>
-        <option value="">選択してください</option>
-        <option value="1年" <%= isEdit && course.target_grade === '1年' ? 'selected' : '' %>>1年</option>
-        <option value="2年" <%= isEdit && course.target_grade === '2年' ? 'selected' : '' %>>2年</option>
-        <option value="3年" <%= isEdit && course.target_grade === '3年' ? 'selected' : '' %>>3年</option>
-        <option value="4年" <%= isEdit && course.target_grade === '4年' ? 'selected' : '' %>>4年</option>
+      <small class="text-muted d-block mb-2">複数選択可能（Ctrl/Cmd キーを押しながらクリック）</small>
+      <select name="target_grade" class="form-select" multiple size="4" required>
+        <option value="1年" <%= isEdit && course.target_grade && course.target_grade.includes('1年') ? 'selected' : '' %>>1年</option>
+        <option value="2年" <%= isEdit && course.target_grade && course.target_grade.includes('2年') ? 'selected' : '' %>>2年</option>
+        <option value="3年" <%= isEdit && course.target_grade && course.target_grade.includes('3年') ? 'selected' : '' %>>3年</option>
+        <option value="4年" <%= isEdit && course.target_grade && course.target_grade.includes('4年') ? 'selected' : '' %>>4年</option>
       </select>
+      <small class="text-muted">※ Ctrl/Cmd キーを押しながら複数選択できます</small>
     </div>
     
     <!-- 開講される時期 -->
@@ -117,7 +118,7 @@
     <!-- キャンパス区分 -->
     <div class="mb-3">
       <label class="form-label">キャンパス区分</label>
-      <input type="text" name="campus" class="form-control" value="<%= isEdit ? course.campus : '' %>" placeholder="例: 戸畑キャンパス">
+      <input type="text" name="campus" class="form-control" value="<%= isEdit ? course.campus : '戸畑' %>" placeholder="例: 戸畑、若松">
     </div>
     
     <!-- 授業説明 -->

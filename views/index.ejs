@@ -80,7 +80,12 @@
             <!-- 基本情報 -->
             <div class="mb-2">
               <small class="text-muted">
-                  <strong>対象学年:</strong> <%= course.target_grade || '未設定' %>
+                  <strong>対象学年:</strong> 
+                  <% if (course.target_grade && Array.isArray(course.target_grade)) { %>
+                    <%= course.target_grade.join(', ') %>
+                  <% } else { %>
+                    <%= course.target_grade || '未設定' %>
+                  <% } %>
                   <br class="d-md-none">
                   <span class="d-none d-md-inline"> | </span>
                   <strong>開講:</strong> <%= course.semester || '未設定' %>
