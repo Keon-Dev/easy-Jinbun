@@ -43,9 +43,11 @@ router.get('/', async (req, res) => {
         { title: new RegExp(normalizedSearch, 'i') },
         { professor: new RegExp(normalizedSearch, 'i') },
         { target_grade: new RegExp(normalizedSearch, 'i') },
-        { semester: new RegExp(normalizedSearch, 'i') },
-        { classroom: new RegExp(normalizedSearch, 'i') },
+        { class_format: new RegExp(normalizedSearch, 'i') },
+        // { semester: new RegExp(normalizedSearch, 'i') },
+        // { classroom: new RegExp(normalizedSearch, 'i') },
         { campus: new RegExp(normalizedSearch, 'i') },
+        { category: new RegExp(normalizedSearch, 'i') },
         { description: new RegExp(normalizedSearch, 'i') }
       ];
     }
@@ -169,9 +171,9 @@ router.post('/courses', validateRequest(courseSchema), async (req, res) => {
       title: req.body.title,
       professor: req.body.professor,
       target_grade: targetGrades,
-      semester: req.body.semester,
+      // semester: req.body.semester,
       credits: req.body.credits || 1,
-      classroom: req.body.classroom,
+      // classroom: req.body.classroom,
       category: req.body.category,
       credit_type: req.body.credit_type,
       attendance_count: attendanceCount,
@@ -221,9 +223,10 @@ router.post('/courses/:id',  validateRequest(courseSchema), async (req, res) => 
       title: req.body.title,
       professor: req.body.professor,
       target_grade: req.body.target_grade,
-      semester: req.body.semester,
+      // semester: req.body.semester,
       credits: req.body.credits || 1,
-      classroom: req.body.classroom,
+      // classroom: req.body.classroom,
+      
       category: req.body.category,
       credit_type: req.body.credit_type,
       attendance_count: attendanceCount,

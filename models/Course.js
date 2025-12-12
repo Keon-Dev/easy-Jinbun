@@ -13,9 +13,17 @@ const courseSchema = new mongoose.Schema({
     message: '対象学年を1つ以上選択してください'
     }
   },
-  semester: { type: String, required: true }, // 開講時期
-  credits: { type: Number, default: 1 },
-  classroom: { type: String, default: '' }, // 講義室
+
+  class_format: { 
+  type: String, 
+  required: true,
+  enum: ['通常', '集中講義'],
+  default: '通常'
+  }, // 授業形式
+
+  // semester: { type: String, required: false }, // 開講時期
+  credits: { type: Number, default: 1 },  
+  // classroom: { type: String, default: '' }, // 講義室
   category: { type: String, default: '' ,required:true}, // 科目区分
   credit_type: { type: String, default: '選必' }, // 単位区分
   

@@ -43,6 +43,13 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #7e4c0b;
 }
 
+/* 集中講義の授業カード背景色 */
+.card.intensive-course {
+  background: linear-gradient(135deg, #fff9e6 0%, #fff3d4 100%);
+  border-left: 4px solid #ff9800;
+}
+
+
 .card-body {
   padding: 1.5rem;
 }

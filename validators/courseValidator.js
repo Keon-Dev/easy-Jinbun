@@ -36,16 +36,25 @@ const courseSchema = Joi.object({
       'any.only': '対象学年は1年、2年、3年、4年から選択してください',
       'any.required': '対象学年は必須です'
     }),
-  
-  semester: Joi.string()
-    .min(1)
-    .max(50)
+
+  class_format: Joi.string()
+    .valid('通常', '集中講義')
     .required()
     .messages({
-      'string.empty': '開講時期は必須です',
-      'string.max': '開講時期は50文字以内で入力してください',
-      'any.required': '開講時期は必須です'
+      'string.empty': '授業形式は必須です',
+      'any.only': '授業形式は「通常」または「集中講義」を選択してください',
+      'any.required': '授業形式は必須です'
     }),
+  
+  // semester: Joi.string()
+  //   .min(1)
+  //   .max(50)
+  //   .required()
+  //   .messages({
+  //     'string.empty': '開講時期は必須です',
+  //     'string.max': '開講時期は50文字以内で入力してください',
+  //     'any.required': '開講時期は必須です'
+  //   }),
   
   credits: Joi.number()
     .integer()
@@ -58,13 +67,13 @@ const courseSchema = Joi.object({
       'number.max': '単位数は10以下で入力してください'
     }),
   
-  classroom: Joi.string()
-    .max(50)
-    .allow('')
-    .optional()
-    .messages({
-      'string.max': '講義室は50文字以内で入力してください'
-    }),
+  // classroom: Joi.string()
+  //   .max(50)
+  //   .allow('')
+  //   .optional()
+  //   .messages({
+  //     'string.max': '講義室は50文字以内で入力してください'
+  //   }),
   
   category: Joi.string()
     .valid('人文社会系科目', 'グローバル教養科目', '')

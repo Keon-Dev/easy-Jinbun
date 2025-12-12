@@ -18,7 +18,7 @@
       <% } %>
       
       <!-- 授業情報カード -->
-      <div class="card mb-4">
+      <div class="card mb-4 <%= course.class_format === '集中講義' ? 'intensive-course' : '' %>">
         <div class="card-body">
           <h5 class="card-title">授業情報</h5>
           
@@ -31,15 +31,18 @@
                   <%= course.target_grade || '未設定' %>
                 <% } %>
               </p>
-              <p><strong>開講時期:</strong> <%= course.semester || '未設定' %></p>
+              <!-- <p><strong>開講時期:</strong> <%= course.semester || '未設定' %></p> -->
               <p><strong>単位数:</strong> <%= course.credits %>単位</p>
               <% if (course.credit_type) { %>
                 <p><strong>単位区分:</strong> <%= course.credit_type %></p>
               <% } %>
             </div>
             <div class="col-md-6">
-              <% if (course.classroom) { %>
+              <!-- <% if (course.classroom) { %>
                 <p><strong>講義室:</strong> <%= course.classroom %></p>
+              <% } %> -->
+              <% if (course.class_format) { %>
+                   <p><strong>授業形式:</strong> <%= course.class_format %></p>
               <% } %>
               <% if (course.campus) { %>
                 <p><strong>キャンパス:</strong> <%= course.campus %></p>

@@ -13,7 +13,7 @@
       <input type="text" name="title" class="form-control" value="<%= isEdit ? course.title : '' %>" required>
     </div>
     
-    <!-- 担当教員 -->
+    <!-- 担当教員 --> 
     <div class="mb-3">
       <label class="form-label">担当教員 <span class="text-danger">*</span></label>
       <input type="text" name="professor" class="form-control" value="<%= isEdit ? course.professor : '' %>" required>
@@ -61,11 +61,20 @@
       </div>
     </div>
     
-    <!-- 開講される時期 -->
+    <!-- 授業形式 (新規追加) -->
     <div class="mb-3">
+      <label class="form-label">授業形式 <span class="text-danger">*</span></label>
+      <select name="class_format" class="form-select" required>
+        <option value="通常" <%= isEdit && course.class_format === '通常' ? 'selected' : '' %>>通常</option>
+        <option value="集中講義" <%= isEdit && course.class_format === '集中講義' ? 'selected' : '' %>>集中講義</option>
+      </select>
+    </div>
+
+    <!-- 開講される時期 -->
+    <!-- <div class="mb-3">
       <label class="form-label">開講される時期 <span class="text-danger">*</span></label>
       <input type="text" name="semester" class="form-control" placeholder="例: 3Q月2" value="<%= isEdit ? course.semester : '' %>" required>
-    </div>
+    </div> -->
 
      <!-- 科目区分 -->
     <div class="mb-3">
@@ -83,10 +92,10 @@
     </div>
     
     <!-- 講義室 -->
-    <div class="mb-3">
+    <!-- <div class="mb-3">
       <label class="form-label">講義室</label>
       <input type="text" name="classroom" class="form-control" value="<%= isEdit ? course.classroom : '' %>" placeholder="例: C101">
-    </div>
+    </div> -->
     
    
     

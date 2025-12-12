@@ -8,8 +8,8 @@
   <form method="GET" action="/" class="mb-4">
     <div class="row g-3">
       <div class="col-md-4">
-        <input type="text" name="search" class="form-control" placeholder="フリーワード検索（科目名、教員名、開講時期など）" value="<%= query.search || '' %>">
-        <small class="text-muted">例: 文学、田中、1年、3Q月2</small>
+        <input type="text" name="search" class="form-control" placeholder="フリーワード検索（科目名、教員名など）" value="<%= query.search || '' %>">
+        <small class="text-muted">例: 文学、田中、1年、集中講義</small> 
       </div>
       <div class="col-md-3">
         <select name="category" class="form-select">
@@ -71,7 +71,7 @@
     
     <% courses.forEach(course => { %>
       <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-4">
-        <div class="card h-100 ">
+        <div class="card h-100 <%= course.class_format === '集中講義' ? 'intensive-course' : '' %>">
           <div class="card-body px-sm-1 default-px">
             <h5 class="card-title"><%= course.title %></h5>
             <h6 class="card-subtitle mb-2 text-muted"><%= course.professor %></h6>
@@ -95,17 +95,20 @@
                     <%= course.target_grade || '未設定' %>
                   <% } %>
                   <br>
-                  <strong>開講:</strong> <%= course.semester || '未設定' %>
+                  <!-- <strong>開講:</strong> <%= course.semester || '未設定' %> -->
+                  <% if (course.class_format) { %>
+                    <strong>授業形式:</strong> <%= course.class_format %>
+                  <% } %>
               </small>
             </div>
             
-            <% if (course.classroom) { %>
+            <!-- <% if (course.classroom) { %>
               <div class="mb-2">
                 <small class="text-muted">
                   <strong>講義室:</strong> <%= course.classroom %>
                 </small>
               </div>
-            <% } %>
+            <% } %> -->
             <!-- 教員メールアドレス -->
             <% if (course.professor_email) { %>
               <div class="mb-2">
