@@ -170,6 +170,7 @@ router.post('/courses', validateRequest(courseSchema), async (req, res) => {
     const courseData = {
       title: req.body.title,
       professor: req.body.professor,
+      class_format: req.body.class_format,
       target_grade: targetGrades,
       // semester: req.body.semester,
       credits: req.body.credits || 1,
@@ -226,6 +227,7 @@ router.post('/courses/:id',  validateRequest(courseSchema), async (req, res) => 
       // semester: req.body.semester,
       credits: req.body.credits || 1,
       // classroom: req.body.classroom,
+      class_format: req.body.class_format,
       
       category: req.body.category,
       credit_type: req.body.credit_type,
