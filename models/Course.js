@@ -19,7 +19,7 @@ const courseSchema = new mongoose.Schema({
   required: true,
   enum: ['通常', '集中講義'],
   default: '通常'
-  }, // 授業形式
+  }, // 開講パターン
 
   // semester: { type: String, required: false }, // 開講時期
   credits: { type: Number, default: 1 },  
