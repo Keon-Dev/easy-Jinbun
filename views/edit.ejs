@@ -61,9 +61,9 @@
       </div>
     </div>
     
-    <!-- 開講パターン (新規追加) -->
+    <!-- 授業種類 (新規追加) -->
     <div class="mb-3">
-      <label class="form-label">開講パターン<span class="text-danger">*</span></label>
+      <label class="form-label">授業種類<span class="text-danger">*</span></label>
       <select name="class_format" class="form-select" required>
         <option value="通常" <%= isEdit && course.class_format === '通常' ? 'selected' : '' %>>通常</option>
         <option value="集中講義" <%= isEdit && course.class_format === '集中講義' ? 'selected' : '' %>>集中講義</option>
