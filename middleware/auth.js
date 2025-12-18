@@ -41,7 +41,7 @@ function requireAdmin(req, res, next) {
   req.session.returnTo = req.originalUrl;
   res.status(403).render('error', {
     title: '権限エラー',
-    message: '管理者のみアクセス可能です。<a href="/admin/login">ログイン</a>してください。'
+    message: '管理者のみアクセス可能です。ログインしてください。'
   });
 }
 
