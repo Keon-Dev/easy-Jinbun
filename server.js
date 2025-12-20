@@ -88,6 +88,25 @@ app.use(morgan('combined', {
 // ===================================
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// XSS対策: リクエストの全入力をサニタイゼーション
+const { sanitizeObject } = require('./utils/sanitizer');
+app.use((req, res, next) => {
+  // フォームデータ等の洗浄
+  if (req.body) {
+    req.body = sanitizeObject(req.body);
+  }
+  // URLパラメータ(?key=value)の洗浄
+  if (req.query) {
+    req.query = sanitizeObject(req.query);
+  }
+  // URLパスパラメータ(:id)の洗浄
+  if (req.params) {
+    req.params = sanitizeObject(req.params);
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 // 静的ファイルの提供（vercel対応）
 
