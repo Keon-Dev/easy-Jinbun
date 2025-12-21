@@ -90,17 +90,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // XSS対策: リクエストボディのみをサニタイゼーション
-// const { sanitizeObject } = require('./utils/sanitizer');
-// app.use((req, res, next) => {
+const { sanitizeObject } = require('./utils/sanitizer');
+app.use((req, res, next) => {
   // フォームデータ等の洗浄（POSTリクエストのボディのみ）
-  // if (req.body && Object.keys(req.body).length > 0) {
-  //   req.body = sanitizeObject(req.body);
-  // }
+  if (req.body && Object.keys(req.body).length > 0) {
+    req.body = sanitizeObject(req.body);
+  }
   // NOTE: req.queryとreq.paramsはサニタイズしない
   // → Vercelのルーティングと互換性を保つため
   // → mongoSanitize()がNoSQL Injection対策を既に実施済み
-//   next();
-// });
+  next();
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 // 静的ファイルの提供（vercel対応）
