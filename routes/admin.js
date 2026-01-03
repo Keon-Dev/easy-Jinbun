@@ -91,7 +91,7 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
     const reviewCount = await Review.countDocuments();
     const recentReviews = await Review.find()
       .sort({ created_at: -1 })
-      .limit(10)
+      .limit(100)
       .populate('course_id');
     
     res.render('admin/dashboard', {
