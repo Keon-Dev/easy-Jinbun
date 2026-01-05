@@ -292,6 +292,28 @@ document.getElementById('reviewForm').addEventListener('submit', function (e) {
     alert('面白さを選択してください');
     return false;
   }
+
+  // 二重送信防止
+  const submitButton = this.querySelector('button[type="submit"]');
+
+  // 既に送信処理中の場合は処理を中断
+  if (submitButton.disabled) {
+    e.preventDefault();
+    return false;
+  }
+
+  // ボタンを無効化
+  submitButton.disabled = true;
+
+  // ボタンのテキストを変更（送信中であることを明示）
+  const originalText = submitButton.textContent;
+  submitButton.textContent = '送信中...';
+
+  // 5秒後に自動的に再有効化（万が一エラーで戻ってきた場合の保険）
+  setTimeout(() => {
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
+  }, 5000);
 });
 
 // 🔑 サーバーから渡されたCSRFトークンをJS変数に格納 (テンプレートの<script>ブロックの先頭に追加)
